@@ -7,12 +7,26 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @sort_val = ["title","release_date"].include?(params[:sort_by])?params[:sort_by] : nil;
-    @ratings_val = (params[:ratings] != nil)? params[:ratings]: Hash.new;
-    condition = (@ratings_val.keys.empty? == false)?["rating IN (?)", @ratings_val.keys] : nil;
-    @movies = Movie.find(:all, :conditions => condition, :order => @sort_val)
-    @all_ratings = Movie.all_ratings
-  #  @all_ratings.each{|rating| logger.info(rating.rating)}
+    @sort_by = params[:sort_by]
+    if @sort_by.nil? then  
+      @sort_by = session[:sort_by]
+    end
+    @ratings = params[:ratings]
+    if @ratings.nil? && params[:commit].nil? then 
+      @ratings = (session[:ratings].nil?)? Hash.new : session[:ratings] 
+    elsif @ratings.nil? && !params[:commit].nil? then
+      @ratings = Hash.new
+    end
+#    if @sort_by != params[:sort_by] || @ratings != params[:ratings]
+#      redirect_to movies_path(params.merge(:sort_by => @sort_by, :ratings => @ratings))
+#    else 
+      session[:sort_by] = @sort_by
+      session[:ratings] = @ratings
+      condition = (@ratings.keys.empty? == false)?["rating IN (?)", @ratings.keys] : nil;
+      @movies = Movie.find(:all, :conditions => condition, :order => @sort_by)
+      @all_ratings = Movie.all_ratings
+#    end
+   #  @all_ratings.each{|rating| logger.info(rating.rating)}
    # logger.info(@all_ratings)
   end
 
