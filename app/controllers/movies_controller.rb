@@ -13,19 +13,18 @@ class MoviesController < ApplicationController
     end
     @ratings = params[:ratings]
     if @ratings.nil? && params[:commit].nil? then 
-      @ratings = (session[:ratings].nil?)? Hash.new : session[:ratings] 
-    elsif @ratings.nil? && !params[:commit].nil? then
-      @ratings = Hash.new
+      @ratings = (session[:ratings].nil?)? nil : session[:ratings]
     end
-#    if @sort_by != params[:sort_by] || @ratings != params[:ratings]
-#      redirect_to movies_path(params.merge(:sort_by => @sort_by, :ratings => @ratings))
-#    else 
+    logger.info(params[:ratings])
+    if @sort_by != params[:sort_by] || @ratings != params[:ratings] 
+      redirect_to movies_path(params.merge(:sort_by => @sort_by, :ratings => @ratings))
+    else 
       session[:sort_by] = @sort_by
       session[:ratings] = @ratings
-      condition = (@ratings.keys.empty? == false)?["rating IN (?)", @ratings.keys] : nil;
+      condition = (!@ratings.nil? && @ratings.keys.empty? == false)?["rating IN (?)", @ratings.keys] : nil;
       @movies = Movie.find(:all, :conditions => condition, :order => @sort_by)
       @all_ratings = Movie.all_ratings
-#    end
+    end
    #  @all_ratings.each{|rating| logger.info(rating.rating)}
    # logger.info(@all_ratings)
   end
